@@ -6,7 +6,7 @@
 #include "../lmdb.h"
 #include "../midl.h"
 
-#define NBR_THREADS 10
+#define NBR_THREADS 20
 #define NBR_DB 2
 
 void* run(void* param) {
