@@ -6,8 +6,8 @@
 #include "../lmdb.h"
 #include "../midl.h"
 
-#define NBR_THREADS 20
-#define NBR_DB 2
+#define NBR_THREADS 75
+#define NBR_DB 200000
 
 void* run(void* param) {
     char* dir_name = (char*) param;
@@ -19,7 +19,6 @@ void* run(void* param) {
         printf("ERROR opening env\n");
         goto exit;
     }
-    int parent_txn_res;
 
     for (int i=0; i<NBR_DB;++i) {
         char* db_name = malloc(100);
@@ -27,16 +26,15 @@ void* run(void* param) {
 
         MDB_txn* txn;
 
-        if (mdb_txn_begin(env, NULL, 0, &txn) != 0) {
-            printf("ERROR opening nested txn\n");
-            printf("[%s]ERROR opening parent_txn, %d\n", dir_name, parent_txn_res);
+        int txn_res;
+        if ((txn_res = mdb_txn_begin(env, NULL, MDB_RDONLY, &txn) != 0)) {
+            printf("[%s]ERROR opening txn, %d\n", dir_name, txn_res);
             fprintf(stderr, "errno code: %d ", errno);
             perror("Cause");
             goto exit_loop;
         }
 
         MDB_dbi db;
-        sleep(1);
         mdb_txn_commit(txn);
         free(db_name);
         continue;
@@ -59,7 +57,7 @@ int main(int argc, char** argv) {
         sprintf(dir_name, "tmp_env_%i", i);
         pthread_create(&threads[i], NULL, run, dir_name);
     }
-    
+
     for (int i = 0; i < NBR_THREADS; ++i) {
         void* retval;
         pthread_join(threads[i], &retval);

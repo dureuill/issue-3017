@@ -6,3 +6,4 @@ do
     mkdir tmp_env_$i 
 done
 gcc main.c ../liblmdb.a -lpthread -o repro && ./repro
+rm -rf tmp_env_*
